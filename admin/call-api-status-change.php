@@ -16,7 +16,7 @@ class Create_Update_Order {
         // Get all custom post type data
         $posts = $this->get_posts()->posts;
 
-        $this->put_api_response_data( 'Posts ' . json_encode( $posts ) );
+        // $this->put_api_response_data( 'Posts ' . json_encode( $posts ) );
 
         // Define selected post based on new order status
         $selected_post = null;
@@ -156,6 +156,8 @@ class Create_Update_Order {
             ],
         ] );
 
+        // $this->put_api_response_data( 'Payload: ' . json_encode( $payload ) );
+
         // Initialize cURL
         $curl = curl_init();
         curl_setopt_array(
@@ -198,16 +200,30 @@ class Create_Update_Order {
         // Get order items
         $_line_items = $order->get_items();
 
-        $products = [];
-        foreach ( $_line_items as $key => $value ) {
+        $products      = [];
+        $product_names = []; // Initialize an array to store product names
 
+        foreach ( $_line_items as $key => $value ) {
             // Get item data
             $_item_data = $value->get_data();
 
-            // Get product name and quantity
-            $products['product_name']     = $_item_data['name'];
-            $products['product_quantity'] = $_item_data['quantity'];
+            // Add product name to the array
+            $product_names[] = $_item_data['name'];
         }
+
+        // Concatenate product names with commas and assign to 'product_name' key
+        $products['product_name'] = implode( ', ', $product_names );
+
+        // Optionally, if you also want to store quantities:
+        $product_quantities = [];
+        foreach ( $_line_items as $key => $value ) {
+            $_item_data           = $value->get_data();
+            $product_quantities[] = $_item_data['quantity'];
+        }
+
+        // Concatenate quantities with commas
+        $products['product_quantity'] = implode( ', ', $product_quantities );
+
 
         // Get order content from WordPress options table
         $order_content = get_option( '_order_content_' . $order_id ) ?? '';
